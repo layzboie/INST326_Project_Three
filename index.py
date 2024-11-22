@@ -1,65 +1,101 @@
 import calendar
 
-# Example caregivers with availability
-caregivers = {
-    "Alice": {"preferred": ["Monday AM", "Tuesday PM"], "available": ["Wednesday AM", "Friday PM"]},
-    "Bob": {"preferred": ["Tuesday AM", "Friday AM"], "available": ["Monday PM", "Saturday AM"]},
-    "Charlie": {"preferred": ["Wednesday PM"], "available": ["Thursday AM", "Sunday PM"]},
-}
+# Caregiver Class
+class Caregiver:
+    # Holds info about caregivers and their availability
+    def __init__(self, name, phone, email, pay_rate=20):
+        # Set up the caregiver's details
+        self.name = name
+        self.phone = phone
+        self.email = email
+        self.pay_rate = pay_rate
+        self.hours = 0  # Hours worked
+        self.availability = {}  # Availability for shifts
 
-# Example function to generate a schedule
-def create_schedule(month, year):
-    # Create a simple HTML calendar
-    cal = calendar.HTMLCalendar()
-    schedule = cal.formatmonth(year, month)
+    def set_availability(self, date, shift, status="available"):
+        # Update the caregiver's availability for a shift
+        if date not in self.availability:
+            self.availability[date] = {}
+        self.availability[date][shift] = status
 
-    # Example: Assign caregivers to shifts (simple round-robin)
-    shifts = ["AM", "PM"]
-    caregivers_list = list(caregivers.keys())
-    schedule_assignments = {}
+    def get_weekly_hours(self):
+        # Figure out how many hours they worked in a week
+        return self.hours
 
-    for day in range(1, calendar.monthrange(year, month)[1] + 1):  # Days in the month
-        for shift in shifts:
-            caregiver = caregivers_list[(day - 1) % len(caregivers_list)]
-            schedule_assignments[(day, shift)] = caregiver
+# Scheduler Class
+class Scheduler:
+    # Manages the caregivers and schedules
+    def __init__(self):
+        # Set up the scheduler
+        self.caregivers = []  # List of caregivers
+        self.schedule = {}  # Schedule for all days
 
-    # Display assignments
-    print("Care Schedule:")
-    for (day, shift), caregiver in schedule_assignments.items():
-        print(f"Day {day}, {shift}: {caregiver}")
+    def add_caregiver(self, caregiver):
+        # Add a caregiver to the system
+        self.caregivers.append(caregiver)
 
-    return schedule
+    def create_schedule(self, month, year):
+        # Create a schedule for a whole month using a simple round-robin method
+        cal = calendar.Calendar()
+        days_in_month = calendar.monthrange(year, month)[1]
+        shifts = ["AM", "PM"]
+        caregivers_list = self.caregivers
+        schedule_assignments = {}
 
+        for day in range(1, days_in_month + 1):  # Days in the month
+            for shift in shifts:
+                # Assign a caregiver based on availability and preference
+                for caregiver in caregivers_list:
+                    if (f"{year}-{month:02d}-{day:02d}") in caregiver.availability and caregiver.availability[f"{year}-{month:02d}-{day:02d}"].get(shift) == "preferred":
+                        schedule_assignments[(day, shift)] = caregiver.name
+                        caregiver.hours += 4  # Add 4 hours per shift
+                        break
 
-# Generate a schedule for December 2024
-html_calendar = create_schedule(12, 2024)
+        self.schedule = schedule_assignments  # Update the schedule
+        return schedule_assignments
 
-# Pay rate
-PAY_RATE = 20  # $20/hour
+    def display_schedule(self):
+        print("Schedule:")
+        for (day, shift), caregiver in self.schedule.items():
+            print(f"Day {day}, {shift}: {caregiver}")
 
-# Weekly hours for each caregiver (Example Data)
-caregiver_hours = {
-    "Alice": 20,  # 20 hours per week
-    "Bob": 15,    # 15 hours per week
-    "Charlie": 25,  # 25 hours per week
-}
+    def generate_pay_report(self):
+        # Generate pay report based on hours worked
+        pay_report = {}
+        for caregiver in self.caregivers:
+            pay_report[caregiver.name] = caregiver.hours * caregiver.pay_rate
+        return pay_report
 
-# Function to calculate weekly pay
-def calculate_weekly_pay(hours, rate):
-    return hours * rate
+    def display_pay_report(self):
+        pay_report = self.generate_pay_report()
+        print("Pay Report:")
+        for caregiver, pay in pay_report.items():
+            print(f"{caregiver} earned ${pay:.2f}")
 
-# Generate pay report
-def generate_pay_report():
-    print("Weekly Pay Report")
-    total_weekly_pay = 0
-    for caregiver, hours in caregiver_hours.items():
-        weekly_pay = calculate_weekly_pay(hours, PAY_RATE)
-        print(f"{caregiver}: ${weekly_pay:.2f}")
-        total_weekly_pay += weekly_pay
+# Main program
+if __name__ == "__main__":
+    # Start the scheduling program
+    scheduler = Scheduler()
 
-    total_monthly_pay = total_weekly_pay * 4  # Assuming 4 weeks per month
-    print(f"Total Weekly Pay: ${total_weekly_pay:.2f}")
-    print(f"Total Monthly Pay: ${total_monthly_pay:.2f}")
+    # Add caregivers
+    caregiver1 = Caregiver("John Doe", "555-1234", "john@example.com")
+    caregiver2 = Caregiver("Alice Smith", "555-5678", "alice@example.com")
+    caregiver3 = Caregiver("Bob Brown", "555-9876", "bob@example.com")
 
-# Generate the report
-generate_pay_report()
+    scheduler.add_caregiver(caregiver1)
+    scheduler.add_caregiver(caregiver2)
+    scheduler.add_caregiver(caregiver3)
+
+    # Set up availability
+    caregiver1.set_availability("2024-11-01", "AM", "preferred")
+    caregiver2.set_availability("2024-11-01", "PM", "preferred")
+    caregiver3.set_availability("2024-11-02", "AM", "preferred")
+
+    # Make a schedule for November 2024
+    scheduler.create_schedule(11, 2024)
+
+    # Show the schedule
+    scheduler.display_schedule()
+
+    # Show the pay report
+    scheduler.display_pay_report()
