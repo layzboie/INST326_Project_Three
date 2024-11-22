@@ -1,6 +1,5 @@
-
 class Caregiver:
-        # Holds info about caregivers and their availability
+    # Holds info about caregivers and their availability
     def __init__(self, name, phone, email, pay_rate=20):
         # Set up the caregiver's details
         self.name = name
