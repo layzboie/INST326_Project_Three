@@ -35,23 +35,42 @@ class Scheduler:
         pass
 
     def assign_shift(self, date, shift):
-        # Assign someone to a shift
-        pass
+        for c in self.caregivers:
+            if date in c.availability and shift in c.availability[date] and c.availability[date][shift] == "preferred":
+                if date not in self.schedule:
+                    self.schedule[date] = {"AM": [], "PM": []}
+                self.schedule[date][shift] = [c.name]  # assign caregiver
+                c.hours = c.hours + 4  # add hours
+                print("Assigned " + c.name + " to " + shift + " on " + date)
+                return
+        print("No one for " + shift + " on " + date)  
+
 
     def generate_pay_report(self):
-        # Make a report for how much everyone earned
-        pass
+        pay = {}  
+        for c in self.caregivers:
+            pay[c.name] = c.hours * c.pay_rate 
+        return pay  
 
     def display_schedule(self):
-        # Show the schedule
-        pass
+        print("Schedule")
+        for d in self.schedule:  
+            am = "No one"
+            pm = "No one"
+            if "AM" in self.schedule[d]:
+                am = ", ".join(self.schedule[d]["AM"])
+            if "PM" in self.schedule[d]:
+                pm = ", ".join(self.schedule[d]["PM"])
+            print(d + ": AM: " + am + ", PM: " + pm)
 
     def display_pay_report(self):
-        # Show how much everyone is being paid
-        pass
+        pay = self.generate_pay_report()  
+        print("Pay Report")
+        for n in pay:  
+            print(n + " earned " + str(pay[n]) + " dollars")
 
 
-# Main Program
+# main program
 if __name__ == "__main__":
     # Start the scheduling program
     scheduler = Scheduler()
@@ -63,7 +82,7 @@ if __name__ == "__main__":
     scheduler.add_caregiver(caregiver1)
     scheduler.add_caregiver(caregiver2)
 
-    # Set up availability (details will be added later)
+    # Set up availability 
     caregiver1.set_availability("2024-11-01", "AM", "preferred")
     caregiver2.set_availability("2024-11-01", "PM", "preferred")
 
