@@ -18,7 +18,6 @@ class Caregiver:
         # Figure out how many hours they worked in a week
         pass
 
-
 class Scheduler:
     # Manages the caregivers and schedules
     def __init__(self):
@@ -44,7 +43,6 @@ class Scheduler:
                 print("Assigned " + c.name + " to " + shift + " on " + date)
                 return
         print("No one for " + shift + " on " + date)  
-
 
     def generate_pay_report(self):
         pay = {}  
